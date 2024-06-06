@@ -40,19 +40,6 @@ async def hello(Authorize:AuthJWT=Depends()):
     status_code=status.HTTP_201_CREATED
 )
 async def signup(user:SignUpModel):
-    """
-        ## Create a user
-        This requires the following
-        ```
-                username:int
-                email:str
-                password:str
-                is_staff:bool
-                is_active:bool
-
-        ```
-    
-    """
 
 
     db_email=session.query(User).filter(User.email==user.email).first()
@@ -121,12 +108,7 @@ async def login(user:LoginModel,Authorize:AuthJWT=Depends()):
 
 @auth_router.get('/refresh')
 async def refresh_token(Authorize:AuthJWT=Depends()):
-    """
-    ## Create a fresh token
-    This creates a fresh token. It requires an refresh token.
-    """
-
-
+   
     try:
         Authorize.jwt_refresh_token_required()
 
