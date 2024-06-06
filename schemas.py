@@ -33,6 +33,17 @@ class LoginModel(BaseModel):
     password:str
 
 
+class UserOut(BaseModel):
+    id: int
+    username: str
+    email: str
+    is_active: bool
+    is_staff: bool
+
+    class Config:
+        orm_mode = True
+
+
 
 class OrderModel(BaseModel):
     id:Optional[int]
@@ -53,3 +64,13 @@ class OrderModel(BaseModel):
         }
 
 
+class OrderStatusModel(BaseModel):
+    order_status:Optional[str]="PENDING"
+
+    class Config:
+        orm_mode=True
+        schema_extra={
+            "example":{
+                "order_status":"PENDING"
+            }
+        }
