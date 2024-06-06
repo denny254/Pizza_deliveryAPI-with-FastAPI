@@ -1,13 +1,12 @@
 from fastapi import APIRouter,status,Depends
 from fastapi.exceptions import HTTPException
 from database import Session,engine
-from schemas import SignUpModel,LoginModel,UserOut
+from schemas import SignUpModel,LoginModel
 from models import User
 from fastapi.exceptions import HTTPException
 from werkzeug.security import generate_password_hash , check_password_hash
 from fastapi_jwt_auth import AuthJWT
 from fastapi.encoders import jsonable_encoder
-from typing import List
 
 
 auth_router=APIRouter(
@@ -21,6 +20,11 @@ session=Session(bind=engine)
 
 @auth_router.get('/')
 async def hello(Authorize:AuthJWT=Depends()):
+
+    """
+        ## Sample hello world route
+    
+    """
     try:
         Authorize.jwt_required()
 
@@ -36,6 +40,19 @@ async def hello(Authorize:AuthJWT=Depends()):
     status_code=status.HTTP_201_CREATED
 )
 async def signup(user:SignUpModel):
+    """
+        ## Create a user
+        This requires the following
+        ```
+                username:int
+                email:str
+                password:str
+                is_staff:bool
+                is_active:bool
+
+        ```
+    
+    """
 
 
     db_email=session.query(User).filter(User.email==user.email).first()
@@ -72,7 +89,15 @@ async def signup(user:SignUpModel):
 
 @auth_router.post('/login',status_code=200)
 async def login(user:LoginModel,Authorize:AuthJWT=Depends()):
- 
+    """     
+        ## Login a user
+        This requires
+            ```
+                username:str
+                password:str
+            ```
+        and returns a token pair `access` and `refresh`
+    """
     db_user=session.query(User).filter(User.username==user.username).first()
 
     if db_user and check_password_hash(db_user.password, user.password):
@@ -96,7 +121,12 @@ async def login(user:LoginModel,Authorize:AuthJWT=Depends()):
 
 @auth_router.get('/refresh')
 async def refresh_token(Authorize:AuthJWT=Depends()):
-   
+    """
+    ## Create a fresh token
+    This creates a fresh token. It requires an refresh token.
+    """
+
+
     try:
         Authorize.jwt_refresh_token_required()
 
@@ -111,17 +141,3 @@ async def refresh_token(Authorize:AuthJWT=Depends()):
     access_token=Authorize.create_access_token(subject=current_user)
 
     return jsonable_encoder({"access":access_token})
-
-
-@auth_router.get('/users', response_model=List[UserOut])
-async def get_all_users(Authorize: AuthJWT = Depends()):
-    try:
-        Authorize.jwt_required()
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid Token"
-        )
-
-    users = session.query(User).all()
-    return users
